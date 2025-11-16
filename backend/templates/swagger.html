@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -18,7 +19,7 @@
     <script>
       window.onload = () => {
         SwaggerUIBundle({
-          url: "/static/openapi.json",
+          url: "{% static 'openapi.json' %}",
           dom_id: "#swagger-ui",
           presets: [SwaggerUIBundle.presets.apis],
         });

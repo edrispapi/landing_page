@@ -17,7 +17,22 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.template import loader
-from django_ratelimit.decorators import ratelimit
+try:
+    from django_ratelimit.decorators import ratelimit as _ratelimit  # type: ignore
+except Exception:  # pragma: no cover - optional dependency in local mode
+    _ratelimit = None  # type: ignore
+
+def ratelimit(*args, **kwargs):
+    """
+    No-op wrapper when rate limiting is disabled or django_ratelimit is unavailable.
+    """
+    if getattr(settings, "RATELIMIT_ENABLE", False) and _ratelimit:
+        return _ratelimit(*args, **kwargs)
+
+    def _decorator(view_func):
+        return view_func
+
+    return _decorator
 
 from .logging import get_mongo_client
 from .tasks import process_lead_submission
@@ -75,16 +90,21 @@ class SubmitLeadView(View):
 
         metadata = self._build_metadata(request)
 
-        async_result = process_lead_submission.delay(
-            phone_number=phone_number,
-            metadata=metadata,
-        )
+        try:
+            async_result = process_lead_submission.delay(
+                phone_number=phone_number,
+                metadata=metadata,
+            )
+            task_id = async_result.id
+        except Exception as exc:  # Broker unavailable or enqueue failure
+            logger.warning("Failed to enqueue Celery task: %s", exc)
+            task_id = None
 
         return JsonResponse(
             {
                 "success": True,
                 "message": "Your number has been registered successfully!",
-                "task_id": async_result.id,
+                "task_id": task_id,
             },
             status=202,
         )
