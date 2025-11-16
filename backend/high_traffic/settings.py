@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
-    "django_ratelimit",
     "leads",
 ]
 
@@ -207,6 +206,9 @@ MONGO_DB_NAME = os.environ.get("MONGO_DB_NAME", "landing_logs")
 # ------------------------------------------------------------------------------
 RATELIMIT_ENABLE = bool(REDIS_URL)
 RATELIMIT_USE_CACHE = "default"
+# Only load django_ratelimit when a shared cache (e.g., Redis) is configured
+if RATELIMIT_ENABLE:
+    INSTALLED_APPS.append("django_ratelimit")
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True

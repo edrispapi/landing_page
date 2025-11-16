@@ -27,11 +27,15 @@ nginx.conf
    python3 -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt
    ```
-2. **Environment variables**
-   ```bash
-   cp .env.example .env
-   # edit secrets / connection strings
+   On Windows (PowerShell):
+   ```powershell
+   cd backend
+   py -3 -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
    ```
+2. **Environment variables**
+   If you have an `.env` file, it will be loaded automatically. Not required for local sqlite.
 3. **Database migrations**
    ```bash
    python manage.py migrate
@@ -44,7 +48,15 @@ nginx.conf
    # Celery worker (separate terminal)
    celery -A high_traffic worker --loglevel=info --queues=leads
    ```
-   Redis, PostgreSQL, and MongoDB are required; easiest path is `docker-compose` (below) or change the env variables to point at local instances.
+   Notes:
+   - To run without Redis locally, set `USE_LOCAL_CACHE=1` (rate limit disabled):
+     - Unix/mac: `export USE_LOCAL_CACHE=1`
+     - Windows PowerShell: `$env:USE_LOCAL_CACHE="1"`
+   - The `/api/health/` endpoint will report "degraded" if Redis, Mongo, or Celery are not running. This does not affect basic functionality.
+
+5. **API Docs (Swagger UI)**
+   - Visit `http://localhost:8000/docs/` for interactive API documentation.
+   - Docs are powered by a static OpenAPI file at `backend/static/openapi.json`.
 
 ## Frontend Setup
 
@@ -75,7 +87,7 @@ Services:
 - `nginx`: Lightweight reverse proxy on port 80
 - `db`, `redis`, `mongo`: backing data stores with persisted volumes
 
-Environment defaults live in `backend/.env.docker`; adjust as needed.
+If you maintain a Docker env file, place it at `backend/.env.docker` (optional). The repository does not include one by default.
 
 ## API Surface
 
@@ -86,6 +98,11 @@ Environment defaults live in `backend/.env.docker`; adjust as needed.
 | GET    | `/api/health/`| Checks Postgres, Redis, Mongo, Celery ping|
 
 Rate limiting: 10 POST requests per IP per minute (configurable via `django_ratelimit`).
+
+## API Documentation
+
+- Swagger UI: `http://localhost:8000/docs/`
+- OpenAPI schema source: `backend/static/openapi.json`
 
 ## Observability & Logging
 
