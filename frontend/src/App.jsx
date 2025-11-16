@@ -21,7 +21,7 @@ export default function App() {
     setErrorMessage('');
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3500);
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     try {
       const response = await fetch(LEAD_ENDPOINT, {
