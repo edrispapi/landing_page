@@ -1,0 +1,12 @@
+Django==5.0.14
+dj-database-url==3.0.1
+python-dotenv==1.2.1
+django-redis==6.0.0
+django-cors-headers==4.9.0
+django-ratelimit==4.1.0
+celery==5.5.3
+redis==7.0.1
+pymongo==4.15.4
+psycopg[binary]==3.1.19
+gunicorn==23.0.0
+whitenoise==6.8.2
